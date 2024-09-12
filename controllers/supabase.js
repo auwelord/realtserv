@@ -29,10 +29,6 @@ exports.g_deleteDeck = (req, res) => deleteDeck (req, res)
 
 async function isAdmin (req, res)
 {
-    const { data } = await req.srvroleSupabase.auth.getUser()
-    console.log("DATA=============1")
-    console.log(data)
-
     const userId = req.params.id;
 
     res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
@@ -157,9 +153,6 @@ async function saveProperties (req, res)
 
 async function saveDeck (req, res)
 {
-    const { data } = await req.srvroleSupabase.auth.getUser()
-    console.log("DATA=============1")
-    console.log(data)
     var deck = _.merge({}, req.body.deck)
     delete deck.cards
     delete deck.hero
