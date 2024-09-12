@@ -15,12 +15,7 @@ function traille (fct)
     }
 }
 
-exports.g_isAdmin = (req, res) =>
-{
-    const userId = req.params.id;
-
-    res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
-}
+exports.g_isAdmin = (req, res) => traille(() => isAdmin (req, res))
 exports.g_saveProperties = (req, res) => traille(() => saveProperties (req, res))
 exports.g_saveDeck = (req, res) => saveDeck (req, res)
 exports.g_updateDeck = (req, res) => updateDeck (req, res)
@@ -31,6 +26,17 @@ exports.g_getCardFromApi = (req, res) => traille(() => getCardFromApi (req, res)
 exports.g_newDeck = (req, res) => newDeck (req, res)
 exports.g_setCardsDeck = (req, res) => setCardsDeck (req, res)
 exports.g_deleteDeck = (req, res) => deleteDeck (req, res)
+
+async function isAdmin (req, res)
+{
+    const { data } = await req.srvroleSupabase.auth.getUser()
+    console.log("DATA=============1")
+    console.log(data)
+
+    const userId = req.params.id;
+
+    res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
+}
 
 async function getCardFromApi (req, res)
 {
