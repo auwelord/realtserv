@@ -151,11 +151,9 @@ async function saveProperties (req, res)
 
 async function saveDeck (req, res)
 {
-    const { data } = await anonSupabase.auth.getUser()
+    const { data } = await req.srvroleSupabase.auth.getUser()
     console.log("DATA=============")
     console.log(data)
-    console.log("BODY=============")
-    console.log(req.body)
     var deck = _.merge({}, req.body.deck)
     delete deck.cards
     delete deck.hero

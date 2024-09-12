@@ -34,12 +34,6 @@ function extractToken(req, res, next)
 
     const srvroleSupabase = createServerClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, 
     {
-        /*
-        global: {
-            headers: {
-                Authorization: getAccessToken(req),
-            },
-        },*/
         cookies: {
             getAll() {
                 return parseCookieHeader(req.headers.cookie ?? '')
