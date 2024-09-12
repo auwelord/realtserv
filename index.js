@@ -34,11 +34,16 @@ function extractToken(req, res, next)
 
     const srvroleSupabase = createServerClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, 
     {
-        cookies: {
-            getAll() {
+        cookies: 
+        {
+            getAll() 
+            {
+                console.log("=======================================================")
+                console.log(parseCookieHeader(req.headers.cookie ?? ''))
                 return parseCookieHeader(req.headers.cookie ?? '')
             },
-            setAll(cookiesToSet) {
+            setAll(cookiesToSet) 
+            {
                 cookiesToSet.forEach(({ name, value, options }) =>
                     res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
                 )
