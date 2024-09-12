@@ -27,63 +27,36 @@ const corsOptions =
     credentials: true,  // Enable credentials (cookies)
 }
 
-function getAccessToken(req)
-{
-    parseCookieHeader(req.headers.cookie ?? '').forEach(cookie => {
-        if(cookie.name == 'sb-fyqptmokmnymednlerpj-auth-token')
-        {
-            console.log('Bearer ' + JSON.parse(cookie.value).access_token)
-            return 'Bearer ' + JSON.parse(cookie.value).access_token
-        }
-    })
-    return ''
-    
-    //'Bearer ' + parseCookieHeader(req.headers.cookie ?? '').access_token
-}
 function extractToken(req, res, next) 
 {
-    //const authHeader = req.headers['authorization'];
-  
-    //if (authHeader && authHeader.startsWith('Bearer ')) {
-      // Extract the token from the "Bearer" string
-      //const accessToken = authHeader.split(' ')[1];  // Get the token part
-      //req.token = token;  // Attach token to request object
-        //if(!accessToken) res.status(401).send('Authorization header missing or invalid')
-        //else
-        //{
-            //c'est bourrin mais fait chier
-            const anonSupabase = createClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_CLIENT_ANON_SECRET)
+    //c'est bourrin mais fait chier
+    const anonSupabase = createClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_CLIENT_ANON_SECRET)
 
-            const srvroleSupabase = createServerClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, 
-            {
-                /*
-                global: {
-                    headers: {
-                      Authorization: getAccessToken(req),
-                    },
-                },*/
-                cookies: {
-                    getAll() {
-                        return parseCookieHeader(req.headers.cookie ?? '')
-                    },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
-                        )
-                    },
-                }
-            })
-            req.anonSupabase = anonSupabase
-            req.srvroleSupabase = srvroleSupabase
-        //}        
+    const srvroleSupabase = createServerClient(process.env.SUPABASE_CLIENT_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, 
+    {
+        /*
+        global: {
+            headers: {
+                Authorization: getAccessToken(req),
+            },
+        },*/
+        cookies: {
+            getAll() {
+                return parseCookieHeader(req.headers.cookie ?? '')
+            },
+            setAll(cookiesToSet) {
+                cookiesToSet.forEach(({ name, value, options }) =>
+                    res.appendHeader('Set-Cookie', serializeCookieHeader(name, value, options))
+                )
+            },
+        }
+    })
+    req.anonSupabase = anonSupabase
+    req.srvroleSupabase = srvroleSupabase
 
-      next();  // Pass control to the next middleware
-      /*
-    } else {
-      res.status(401).send('Authorization header missing or invalid');
-    }
-      */
+    next();  // Pass control to the next middleware
 }
+
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(extractToken);
