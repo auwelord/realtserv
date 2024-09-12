@@ -8,7 +8,7 @@ const supabaseRoutes = require('./routes/supabase');
 const { createServerClient, parseCookieHeader, serializeCookieHeader } = require('@supabase/ssr')
 const { createClient } = require('@supabase/supabase-js')
 
-const allowedOrigins = ['http://localhost:5173', 'http://192.168.1.160:5173', 'https://realtered.onrender.com/'];
+const allowedOrigins = ['http://localhost:5173', 'http://192.168.1.160:5173', 'https://realtered.onrender.com'];
 
 const corsOptions = 
 {
