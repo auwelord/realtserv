@@ -38,8 +38,6 @@ function extractToken(req, res, next)
         {
             getAll() 
             {
-                console.log("=======================================================")
-                console.log(parseCookieHeader(req.headers.cookie ?? ''))
                 return parseCookieHeader(req.headers.cookie ?? '')
             },
             setAll(cookiesToSet) 
