@@ -38,7 +38,20 @@ function extractToken(req, res, next)
         {
             getAll() 
             {
-                return parseCookieHeader(req.headers.cookie ?? '')
+                var cookiz = parseCookieHeader(req.headers.cookie ?? '')
+                if(req.headers.token0) 
+                {
+                    console.log('set token0')
+                    cookiz.push({'sb-fyqptmokmnymednlerpj-auth-token.0': req.headers.token0})
+                    delete req.headers.token0
+                }
+                if(req.headers.token1) 
+                {
+                    console.log('set token1')
+                    cookiz.push({'sb-fyqptmokmnymednlerpj-auth-token.1': req.headers.token1})
+                    delete req.headers.token1
+                }
+                return cookiz
             },
             setAll(cookiesToSet) 
             {
