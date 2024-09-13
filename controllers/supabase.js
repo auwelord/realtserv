@@ -136,6 +136,7 @@ async function saveProperties (req, res)
     const deck = {
         name: pdeck.name,
         description: pdeck.description,
+        public: pdeck.public,
         modifiedAt: new Date().toISOString()
     }
 
