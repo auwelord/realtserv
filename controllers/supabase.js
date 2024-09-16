@@ -2,50 +2,24 @@
 require('dotenv').config()
 const _ = require('lodash');
 const axios = require('axios');
+const tools = require('../resources/tools');
 
-function traille (fct)
-{
-    try
-    {
-        fct()
-    }
-    catch (error) 
-    {
-        res.status(error.status).send(error);
-    }
-}
-
-exports.g_isAdmin = (req, res) => traille(() => isAdmin (req, res))
-exports.g_saveProperties = (req, res) => traille(() => saveProperties (req, res))
-exports.g_saveDeck = (req, res) => saveDeck (req, res)
-exports.g_updateDeck = (req, res) => updateDeck (req, res)
-exports.g_updateImageS3 = (req, res) => traille(() => updateImageS3 (req, res))
-exports.g_uploadImage = (req, res) => traille(() => uploadImage (req, res))
-exports.g_updateCard = (req, res) => traille(() => updateCard (req, res))
-exports.g_getCardFromApi = (req, res) => traille(() => getCardFromApi (req, res))
-exports.g_newDeck = (req, res) => newDeck (req, res)
-exports.g_setCardsDeck = (req, res) => setCardsDeck (req, res)
-exports.g_deleteDeck = (req, res) => deleteDeck (req, res)
+exports.g_isAdmin = (req, res) => tools.traille(() => isAdmin (req, res), res)
+exports.g_saveProperties = (req, res) => tools.traille(() => saveProperties (req, res), res)
+exports.g_saveDeck = (req, res) => tools.traille(() => saveDeck (req, res), res)
+exports.g_updateDeck = (req, res) => tools.traille(() => updateDeck (req, res), res)
+exports.g_updateImageS3 = (req, res) => tools.traille(() => updateImageS3 (req, res), res)
+exports.g_uploadImage = (req, res) => tools.traille(() => uploadImage (req, res), res)
+exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), res)
+exports.g_newDeck = (req, res) => tools.traille(() => newDeck (req, res), res)
+exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
+exports.g_deleteDeck = (req, res) => tools.traille(() => deleteDeck (req, res), res)
 
 async function isAdmin (req, res)
 {
     const userId = req.params.id;
 
     res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
-}
-
-async function getCardFromApi (req, res)
-{
-    const { data, error } = await axios.get(process.env.ALTERED_CARDS_ENDPOINT + req.params.ref,
-    {
-        headers: {"Accept-Language": "fr-fr"},
-        params: {itemsPerPage: 1, page: 1}
-    })
- 
-    if(error)
-        res.status(error.status).send(error);
-    else
-        res.status(200).json(data)
 }
 
 async function deleteDeck (req, res)

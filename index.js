@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const _ = require('lodash');
-const supabaseRoutes = require('./routes/supabase');
+const supabaseRoutes = require('./routes/endpoints');
 
 const { createServerClient, parseCookieHeader, serializeCookieHeader } = require('@supabase/ssr')
 const { createClient } = require('@supabase/supabase-js')
