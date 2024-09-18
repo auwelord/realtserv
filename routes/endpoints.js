@@ -14,6 +14,7 @@ router.post('/deck/update', supabaseController.g_updateDeck);
 router.post('/deck/saveprops', supabaseController.g_saveProperties);
 router.post('/deck/save', supabaseController.g_saveDeck);
 router.get('/deck/getfromapi/:id', alteredController.g_getDeckFromApi);
+router.get('/deck/favori/:id', supabaseController.g_toggleDeckFavori);
 
 router.get('/deck/delete/:id', supabaseController.g_deleteDeck);
 

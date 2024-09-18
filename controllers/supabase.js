@@ -1,7 +1,6 @@
 
 require('dotenv').config()
 const _ = require('lodash');
-const axios = require('axios');
 const tools = require('../resources/tools');
 
 exports.g_isAdmin = (req, res) => tools.traille(() => isAdmin (req, res), res)
@@ -14,12 +13,48 @@ exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), 
 exports.g_newDeck = (req, res) => tools.traille(() => newDeck (req, res), res)
 exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
 exports.g_deleteDeck = (req, res) => tools.traille(() => deleteDeck (req, res), res)
+exports.g_toggleDeckFavori = (req, res) => tools.traille(() => toggleDeckFavori (req, res), res)
 
 async function isAdmin (req, res)
 {
     const userId = req.params.id;
 
     res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
+}
+
+async function toggleDeckFavori (req, res)
+{
+    const id = req.params.id;
+    var favori = false
+
+    const { data } = await req.srvroleSupabase.auth.getUser()
+
+    if(data.user)
+    {
+        const data1 = await req.anonSupabase
+            .from('DeckFav')
+            .select()
+            .eq('userId', data.user.id)
+            .eq('deckId', id)
+
+        if(data1.data && data1.data.length > 0)
+        {
+            //remove from database
+            const data2 = await req.srvroleSupabase
+                .from('DeckFav')
+                .delete()
+                .eq('userId', data.user.id)
+                .eq('deckId', id)
+        }
+        else{
+            const data3 = await req.srvroleSupabase
+                .from('DeckFav')
+                .insert({deckId: id})
+                
+            favori = !data3.error
+        }
+    }
+    res.status(200).json({favori: favori})
 }
 
 async function deleteDeck (req, res)
@@ -32,7 +67,7 @@ async function deleteDeck (req, res)
         .eq('id', id);
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(data)
 }
@@ -46,7 +81,7 @@ async function setCardsDeck (req, res)
         .insert(cards);
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json({})
         
@@ -62,7 +97,10 @@ async function newDeck (req, res)
         .select();
 
     if(error)
-        res.status(error.status).send(error);
+    {
+        //console.error(error)
+        res.status(error.status ? error.status : 500).send(error);
+    }
     else
         res.status(200).json(data[0])
         
@@ -81,7 +119,7 @@ async function updateDeck (req, res)
         .select();
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(data[0])
         
@@ -97,7 +135,7 @@ async function updateCard (req, res)
         .select();
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(data[0])
 }
@@ -121,7 +159,7 @@ async function saveProperties (req, res)
         .eq('id', pdeck.id);
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(data[0])        
 }
@@ -186,7 +224,7 @@ async function updateImageS3 (req, res)
         .select();
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(card[0])
 }
@@ -206,7 +244,7 @@ async function uploadImage (req, res)
         });
 
     if(error)
-        res.status(error.status).send(error);
+        res.status(error.status ? error.status : 500).send(error);
     else
         res.status(200).json(data)
 }

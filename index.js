@@ -39,6 +39,7 @@ function extractToken(req, res, next)
             getAll() 
             {
                 var cookiz = parseCookieHeader(req.headers.cookie ?? '')
+                
                 if(req.headers.token0) 
                 {
                     cookiz.push({name: 'sb-fyqptmokmnymednlerpj-auth-token.0', value: req.headers.token0})
