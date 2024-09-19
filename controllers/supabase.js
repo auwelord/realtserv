@@ -170,6 +170,7 @@ async function saveDeck (req, res)
     delete deck.cards
     delete deck.hero
     delete deck.DeckFav
+    delete deck.favori
     if(deck.id == 0) delete deck.id
 
     deck.modifiedAt = new Date().toISOString()
