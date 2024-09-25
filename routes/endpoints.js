@@ -7,12 +7,14 @@ const storage = multer.memoryStorage(); // Store file in memory as Buffer
 //const upload = multer({ dest: 'uploads/' })
 const upload = multer({ storage: storage });
 
-router.get('/user/admin/:id', supabaseController.g_isAdmin);
+router.get('/user/admin', supabaseController.g_isAdmin);
 
 router.post('/deck/new', supabaseController.g_newDeck);
 router.post('/deck/update', supabaseController.g_updateDeck);
 router.post('/deck/saveprops', supabaseController.g_saveProperties);
 router.post('/deck/save', supabaseController.g_saveDeck);
+router.post('/deck/newversion', supabaseController.g_createDeckVersion);
+router.post('/deck/deleteversion', supabaseController.g_deleteDeckVersion);
 router.get('/deck/getfromapi/:id', alteredController.g_getDeckFromApi);
 router.get('/deck/favori/:id', supabaseController.g_toggleDeckFavori);
 

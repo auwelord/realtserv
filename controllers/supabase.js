@@ -3,23 +3,43 @@ require('dotenv').config()
 const _ = require('lodash');
 const tools = require('../resources/tools');
 
+//user/admin
 exports.g_isAdmin = (req, res) => tools.traille(() => isAdmin (req, res), res)
-exports.g_saveProperties = (req, res) => tools.traille(() => saveProperties (req, res), res)
-exports.g_saveDeck = (req, res) => tools.traille(() => saveDeck (req, res), res)
-exports.g_updateDeck = (req, res) => tools.traille(() => updateDeck (req, res), res)
+
+//image/s3
 exports.g_updateImageS3 = (req, res) => tools.traille(() => updateImageS3 (req, res), res)
+//image/s3/upload
 exports.g_uploadImage = (req, res) => tools.traille(() => uploadImage (req, res), res)
-exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), res)
+
+//deck/saveprops
+exports.g_saveProperties = (req, res) => tools.traille(() => saveProperties (req, res), res)
+//deck/update
+exports.g_updateDeck = (req, res) => tools.traille(() => updateDeck (req, res), res)
+//deck/new
 exports.g_newDeck = (req, res) => tools.traille(() => newDeck (req, res), res)
-exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
+//deck/newversion
+exports.g_createDeckVersion = (req, res) => tools.traille(() => createDeckVersion (req, res), res)
+//deck/deleteversion
+exports.g_deleteDeckVersion = (req, res) => tools.traille(() => deleteDeckVersion (req, res), res)
+//deck/save
+exports.g_saveDeck = (req, res) => tools.traille(() => saveDeck (req, res), res)
+//deck/delete/:id
 exports.g_deleteDeck = (req, res) => tools.traille(() => deleteDeck (req, res), res)
+//deck/favori/:id
 exports.g_toggleDeckFavori = (req, res) => tools.traille(() => toggleDeckFavori (req, res), res)
+
+//card/update
+exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), res)
+
+//cardsdeck/set
+exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
 
 async function isAdmin (req, res)
 {
-    const userId = req.params.id;
+    const { data } = await req.srvroleSupabase.auth.getUser()
+    const admin = data && data.user && data.user.id == process.env.SUPABASE_ADMINID
 
-    res.status(200).json({isadmin: userId == process.env.SUPABASE_ADMINID});
+    res.status(200).json({isadmin: admin});
 }
 
 async function toggleDeckFavori (req, res)
@@ -61,11 +81,23 @@ async function deleteDeck (req, res)
 {
     const id = req.params.id;
 
+    //suppression de tous les deck versions
+    const { error: errorvrs } = await req.srvroleSupabase
+        .from('Deck')
+        .delete()
+        .eq('refid', id);
+
+    if(errorvrs)
+    {
+        res.status(errorvrs.status ? errorvrs.status : 500).send(errorvrs);
+        return
+    }
+
     const { data, error } = await req.srvroleSupabase
         .from('Deck')
         .delete()
         .eq('id', id);
-
+    
     if(error)
         res.status(error.status ? error.status : 500).send(error);
     else
@@ -98,7 +130,6 @@ async function newDeck (req, res)
 
     if(error)
     {
-        //console.error(error)
         res.status(error.status ? error.status : 500).send(error);
     }
     else
@@ -140,6 +171,84 @@ async function updateCard (req, res)
         res.status(200).json(data[0])
 }
 
+async function deleteDeckVersion (req, res)
+{
+    const pdeck = req.body;
+    const refid = pdeck.refid
+
+    const { data, error } = await req.srvroleSupabase
+        .from('Deck')
+        .delete()
+        .eq('id', pdeck.id);
+
+    //récupération de la dernière version
+    const {data: vrsdecks} = await req.anonSupabase
+        .from('Deck')
+        .select()
+        .eq('refid', refid)
+        .order('version', { ascending: false })
+        .limit(1)
+
+    if(error)
+        res.status(error.status ? error.status : 500).send(error);
+    else
+        res.status(200).json(vrsdecks.version)
+}
+
+async function createDeckVersion (req, res)
+{
+    const pdeck = req.body;
+    
+    
+    var newdeck = {
+        name: pdeck.name,
+        refid: pdeck.refid > 0 ? pdeck.refid : pdeck.id,
+        description: pdeck.description,
+        hero_id: pdeck.hero_id,
+        main_faction: pdeck.main_faction,
+        public: pdeck.public,
+        valide: pdeck.valide,
+    }
+    
+    //recup de la version
+    const {data} = await req.anonSupabase
+        .from('Deck')
+        .select()
+        .eq('refid', newdeck.refid)
+        .order('version', { ascending: false })
+        .limit(1)
+
+    newdeck.version = (data && data.length > 0 ? data[0].version : 1) + 1
+
+    var {data: datadeck, error} = await req.srvroleSupabase
+        .from('Deck')
+        .upsert(newdeck)
+        .select()
+
+    if(error)
+    {
+        res.status(error.status ? error.status : 500).send(error);
+        return
+    }
+
+    newdeck = datadeck[0]
+
+    var cards = [];
+    pdeck.cards.forEach(card => {
+        cards.push({
+            cardRef: card.reference,
+            deckId:  newdeck.id,
+            quantity: card.quantite
+        });
+    });
+    await req.srvroleSupabase
+        .from('CardsDeck')
+        .insert(cards)
+        .select();
+    
+    res.status(200).json(newdeck)
+}
+
 async function saveProperties (req, res)
 {
     const pdeck = req.body;
@@ -166,14 +275,24 @@ async function saveProperties (req, res)
 
 async function saveDeck (req, res)
 {
-    var deck = _.merge({}, req.body.deck)
-    delete deck.cards
-    delete deck.hero
-    delete deck.DeckFav
-    delete deck.favori
-    if(deck.id == 0) delete deck.id
+    var pdeck = req.body.deck
 
-    deck.modifiedAt = new Date().toISOString()
+    var deck = {
+        id: pdeck.id,
+        name: pdeck.name,
+        description: pdeck.description,
+        hero_id: pdeck.hero_id,
+        main_faction: pdeck.main_faction,
+        public: pdeck.public,
+        valide: pdeck.valide != undefined && pdeck.valide,
+        modifiedAt: new Date().toISOString()
+    }
+    if(pdeck.id > 0)
+    {
+        deck.userId = pdeck.userId
+        deck.version = pdeck.version
+    } 
+    else delete deck.id    
 
     var {data: dataDeck, error: errorDeck} = await req.srvroleSupabase
         .from('Deck')
@@ -195,7 +314,7 @@ async function saveDeck (req, res)
         {
             //enregistrements des cartes
             var cards = [];
-            req.body.deck.cards.forEach(card => {
+            pdeck.cards.forEach(card => {
                 cards.push({
                     cardRef: card.reference,
                     deckId:  zedeck.id,
