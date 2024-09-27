@@ -32,7 +32,8 @@ exports.g_toggleDeckFavori = (req, res) => tools.traille(() => toggleDeckFavori 
 exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), res)
 //card/favori/:ref
 exports.g_toggleCardFavori = (req, res) => tools.traille(() => toggleCardFavori (req, res), res)
-
+//card/addfavori/:ref
+exports.g_addCardFavori = (req, res) => tools.traille(() => addCardFavori (req, res), res)
 
 //cardsdeck/set
 exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
@@ -43,6 +44,27 @@ async function isAdmin (req, res)
     const admin = data && data.user && data.user.id == process.env.SUPABASE_ADMINID
 
     res.status(200).json({isadmin: admin});
+}
+
+async function addCardFavori (req, res)
+{
+    const reference = req.params.ref;
+    var favori = false
+
+    const { data } = await req.srvroleSupabase.auth.getUser()
+
+    if(data.user)
+    {
+        const { data, error } = await req.srvroleSupabase
+            .from('UniqueFav')
+            .upsert({reference: reference})
+            .select()
+
+        if(error) console.error(error)
+
+        favori = data && data.length > 0 && !error
+    }
+    res.status(200).json({favori: favori})
 }
 
 async function toggleCardFavori (req, res)
