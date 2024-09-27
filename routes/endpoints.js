@@ -27,6 +27,7 @@ router.post('/image/s3/upload', upload.single('fichier'), supabaseController.g_u
 
 router.post('/card/update', supabaseController.g_updateCard);
 router.get('/card/getfromapi/:ref', alteredController.g_getCardFromApi);
+router.get('/card/favori/:ref', supabaseController.g_toggleCardFavori);
 
 router.post('/cards/getfromapi', alteredController.g_getCardsFromApi);
 

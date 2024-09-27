@@ -30,6 +30,9 @@ exports.g_toggleDeckFavori = (req, res) => tools.traille(() => toggleDeckFavori 
 
 //card/update
 exports.g_updateCard = (req, res) => tools.traille(() => updateCard (req, res), res)
+//card/favori/:ref
+exports.g_toggleCardFavori = (req, res) => tools.traille(() => toggleCardFavori (req, res), res)
+
 
 //cardsdeck/set
 exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
@@ -40,6 +43,41 @@ async function isAdmin (req, res)
     const admin = data && data.user && data.user.id == process.env.SUPABASE_ADMINID
 
     res.status(200).json({isadmin: admin});
+}
+
+async function toggleCardFavori (req, res)
+{
+    const reference = req.params.ref;
+    var favori = false
+
+    const { data } = await req.srvroleSupabase.auth.getUser()
+
+    if(data.user)
+    {
+        const data1 = await req.anonSupabase
+            .from('UniqueFav')
+            .select()
+            .eq('userId', data.user.id)
+            .eq('reference', reference)
+
+        if(data1.data && data1.data.length > 0)
+        {
+            //remove from database
+            const data2 = await req.srvroleSupabase
+                .from('UniqueFav')
+                .delete()
+                .eq('userId', data.user.id)
+                .eq('reference', reference)
+        }
+        else{
+            const data3 = await req.srvroleSupabase
+                .from('UniqueFav')
+                .insert({reference: reference})
+                
+            favori = !data3.error
+        }
+    }
+    res.status(200).json({favori: favori})
 }
 
 async function toggleDeckFavori (req, res)
