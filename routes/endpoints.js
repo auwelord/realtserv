@@ -34,4 +34,6 @@ router.post('/cards/getfromapi', alteredController.g_getCardsFromApi);
 
 router.post('/cardsdeck/set', supabaseController.g_setCardsDeck);
 
+router.post('/tournoi/save', supabaseController.g_saveTournoi);
+
 module.exports = router;

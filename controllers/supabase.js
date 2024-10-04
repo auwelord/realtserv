@@ -38,6 +38,25 @@ exports.g_addCardFavori = (req, res) => tools.traille(() => addCardFavori (req, 
 //cardsdeck/set
 exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
 
+//tournoi/save
+exports.g_saveTournoi = (req, res) => tools.traille(() => saveTournoi (req, res), res)
+
+async function saveTournoi (req, res)
+{
+
+    var ptournoi = req.body
+
+    var {data: dataTournoi, error: errorTournoi} = await req.srvroleSupabase
+        .from('Tournoi')
+        .upsert(ptournoi)
+        .select()
+
+    if(errorTournoi)
+        res.status(errorTournoi.status ? errorTournoi.status : 500).send(errorTournoi);
+    else
+        res.status(200).json({tournoi: dataTournoi[0]})
+}
+
 async function isAdmin (req, res)
 {
     const { data } = await req.srvroleSupabase.auth.getUser()
@@ -345,14 +364,20 @@ async function saveDeck (req, res)
         main_faction: pdeck.main_faction,
         public: pdeck.public,
         valide: pdeck.valide != undefined && pdeck.valide,
-        modifiedAt: new Date().toISOString()
+        modifiedAt: new Date().toISOString(),
+        tournoiId: pdeck.tournoiId,
+        tournoiPos: pdeck.tournoiPos,
     }
     if(pdeck.id > 0)
     {
-        deck.userId = pdeck.userId
+        deck.userId = pdeck.tournoiId > 0 ? null : pdeck.userId
         deck.version = pdeck.version
     } 
-    else delete deck.id    
+    else
+    {
+        if(pdeck.tournoiId > 0) deck.userId = null
+        delete deck.id
+    } 
 
     var {data: dataDeck, error: errorDeck} = await req.srvroleSupabase
         .from('Deck')
