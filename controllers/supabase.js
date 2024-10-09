@@ -239,6 +239,54 @@ async function updateCard (req, res)
 {
     const card = req.body;
 
+    if(card.locale == 'en')
+    {
+        const cardtrad = {
+            reference: card.reference,
+            locale: card.locale,
+            name: card.name,
+            imagePath: card.imagePath,
+            main_effect: card.main_effect,
+            reserve_effect: card.reserve_effect,
+            static_effect: card.static_effect,
+            echo_effect: card.echo_effect,
+            etb_effect: card.etb_effect,
+            hand_effect: card.hand_effect,
+            exhaust_effect: card.exhaust_effect,
+        }
+    
+        const {data: tradcard, error} = await req.srvroleSupabase
+            .from('CardTrad')
+            .upsert([cardtrad])
+            .select();
+
+        const {data: maincard, error: errorcard} = await req.srvroleSupabase
+            .from('Card')
+            .select()
+            .eq('reference', card.reference);
+
+        if(error)
+            res.status(error.status ? error.status : 500).send(error);
+        else
+        {
+            var finalcard = maincard[0]
+            finalcard.name = tradcard[0].name
+            finalcard.imagePath = tradcard[0].imagePath
+            finalcard.main_effect = tradcard[0].main_effect
+            finalcard.reserve_effect = tradcard[0].reserve_effect
+            finalcard.static_effect = tradcard[0].static_effect
+            finalcard.echo_effect = tradcard[0].echo_effect
+            finalcard.etb_effect = tradcard[0].etb_effect
+            finalcard.hand_effect = tradcard[0].hand_effect
+            finalcard.exhaust_effect = tradcard[0].exhaust_effect
+
+            res.status(200).json(finalcard)
+        }
+        return
+    }
+    
+    delete card.locale
+
     const {data, error} = await req.srvroleSupabase
         .from('Card')
         .upsert([card])
@@ -421,18 +469,62 @@ async function saveDeck (req, res)
 
 async function updateImageS3 (req, res)
 {
-    const { data: card, error } = await req.srvroleSupabase
-        .from('Card')
-        .upsert({
-            reference: req.body.card.reference,
-            imageS3: req.body.path
-        })
-        .select();
+    if(req.body.locale == 'fr')
+    {
+        const { data: card, error } = await req.srvroleSupabase
+            .from('Card')
+            .upsert({
+                reference: req.body.card.reference,
+                imageS3: req.body.path
+            })
+            .select();
 
-    if(error)
-        res.status(error.status ? error.status : 500).send(error);
+        if(error)
+            res.status(error.status ? error.status : 500).send(error);
+        else
+            res.status(200).json(card[0])
+    }
     else
-        res.status(200).json(card[0])
+    {
+        const { data: cardtrad, error: errortrad } = await req.srvroleSupabase
+            .from('CardTrad')
+            .upsert({
+                reference: req.body.card.reference,
+                locale: req.body.locale,
+                imageS3: req.body.path
+            })
+            .select()
+
+        if(errortrad)
+        {
+            res.status(errortrad.status ? errortrad.status : 500).send(errortrad);
+            return 
+        }
+
+        const { data: card, error } = await req.anonSupabase
+            .from('Card')
+            .select()
+            .eq('reference', req.body.card.reference);
+
+        if(error)
+        {
+            res.status(error.status ? error.status : 500).send(error);
+            return
+        }
+
+        var finalcard = card[0]
+        finalcard.name = cardtrad[0].name
+        finalcard.imagePath = cardtrad[0].imagePath
+        finalcard.main_effect = cardtrad[0].main_effect
+        finalcard.reserve_effect = cardtrad[0].reserve_effect
+        finalcard.static_effect = cardtrad[0].static_effect
+        finalcard.echo_effect = cardtrad[0].echo_effect
+        finalcard.etb_effect = cardtrad[0].etb_effect
+        finalcard.hand_effect = cardtrad[0].hand_effect
+        finalcard.exhaust_effect = cardtrad[0].exhaust_effect
+
+        res.status(200).json(finalcard)
+    }
 }
 
 async function uploadImage (req, res)

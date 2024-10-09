@@ -44,9 +44,7 @@ async function getCardFromApi (req, res)
 async function getCardsFromApi (req, res)
 {
     try{
-        var headers = {
-            "Accept-Language": "fr-fr"
-        }
+        var headers = {}
 
         if(req.headers.authorization)
         {
