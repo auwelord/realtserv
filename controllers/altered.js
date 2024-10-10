@@ -26,10 +26,9 @@ async function getCardFromApi (req, res)
     try{
         const { data, error } = await axios.get(process.env.ALTERED_CARDS_ENDPOINT + req.params.ref,
         {
-            headers: {"Accept-Language": "fr-fr"},
-            params: {itemsPerPage: 1, page: 1}
+            params: {itemsPerPage: 1, page: 1, locale: req.body.locale}
         })
-
+        
         if(error)
             res.status(error.status).send(error);
         else

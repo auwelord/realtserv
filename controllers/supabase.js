@@ -239,13 +239,13 @@ async function updateCard (req, res)
 {
     const card = req.body;
 
-    if(card.locale == 'en')
+    if(card.locale != 'fr')
     {
         const cardtrad = {
             reference: card.reference,
             locale: card.locale,
             name: card.name,
-            imagePath: card.imagePath,
+            imagePath: card.imageLocale,
             main_effect: card.main_effect,
             reserve_effect: card.reserve_effect,
             static_effect: card.static_effect,
@@ -286,6 +286,7 @@ async function updateCard (req, res)
     }
     
     delete card.locale
+    delete card.imageLocale
 
     const {data, error} = await req.srvroleSupabase
         .from('Card')
