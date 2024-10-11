@@ -13,12 +13,23 @@ async function getPreviewArticle (req, res)
 
     try 
     {
-      const { result } = await ogs({ url });
-      res.status(200).json(result);
+        const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
+
+        const { result } = await ogs(
+        { 
+            url: url,
+            fetchOptions: {
+                headers: {
+                    'user-agent': userAgent,
+                    'Accept-Language': "en"
+                } 
+            }
+        });
+        res.status(200).json(result);
     }
     catch (error) 
     {
-      res.status(500).json({ error: 'Failed to fetch URL preview' });
+        res.status(500).json({ error: 'Failed to fetch URL preview' });
     }
 }
 
