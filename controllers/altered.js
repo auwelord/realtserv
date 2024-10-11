@@ -28,7 +28,7 @@ async function getCardFromApi (req, res)
         {
             params: {itemsPerPage: 1, page: 1, locale: req.body.locale}
         })
-        
+
         if(error)
             res.status(error.status).send(error);
         else
