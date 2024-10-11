@@ -410,6 +410,7 @@ async function saveDeck (req, res)
         id: pdeck.id,
         name: pdeck.name,
         description: pdeck.description,
+        exturl: pdeck.exturl,
         hero_id: pdeck.hero_id,
         main_faction: pdeck.main_faction,
         public: pdeck.public,
