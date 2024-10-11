@@ -13,7 +13,8 @@ async function getPreviewArticle (req, res)
 
     try 
     {
-        const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
+        const userAgent = 'facebookexternalhit/1.1'
+        //'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36';
 
         const { result } = await ogs(
         { 
@@ -21,7 +22,7 @@ async function getPreviewArticle (req, res)
             fetchOptions: {
                 headers: {
                     'user-agent': userAgent,
-                    'Accept-Language': "en"
+                    'Accept-Language': "fr"
                 } 
             }
         });
