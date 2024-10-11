@@ -386,6 +386,7 @@ async function saveProperties (req, res)
         name: pdeck.name,
         description: pdeck.description,
         public: pdeck.public,
+        exturl: pdeck.exturl,
         modifiedAt: new Date().toISOString()
     }
 
