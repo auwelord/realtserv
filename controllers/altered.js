@@ -1,9 +1,26 @@
 const axios = require('axios');
 const _ = require('lodash');
+const ogs = require('open-graph-scraper');
 
 exports.g_getCardFromApi = (req, res) => getCardFromApi (req, res)
 exports.g_getCardsFromApi = (req, res) => getCardsFromApi (req, res)
 exports.g_getDeckFromApi = (req, res) => getDeckFromApi (req, res)
+exports.g_getPreviewArticle = (req, res) => getPreviewArticle (req, res)
+
+async function getPreviewArticle (req, res)
+{
+    const url = req.query.url;
+
+    try 
+    {
+      const { result } = await ogs({ url });
+      res.status(200).json(result);
+    }
+    catch (error) 
+    {
+      res.status(500).json({ error: 'Failed to fetch URL preview' });
+    }
+}
 
 async function getDeckFromApi (req, res)
 {

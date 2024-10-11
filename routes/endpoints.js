@@ -36,4 +36,6 @@ router.post('/cardsdeck/set', supabaseController.g_setCardsDeck);
 
 router.post('/tournoi/save', supabaseController.g_saveTournoi);
 
+router.get('/tools/previewarticle', alteredController.g_getPreviewArticle);
+
 module.exports = router;
