@@ -6,6 +6,8 @@ exports.g_getCardFromApi = (req, res) => getCardFromApi (req, res)
 exports.g_getCardsFromApi = (req, res) => getCardsFromApi (req, res)
 exports.g_getDeckFromApi = (req, res) => getDeckFromApi (req, res)
 exports.g_getPreviewArticle = (req, res) => getPreviewArticle (req, res)
+exports.g_getCardsStats = (req, res) => getCardsStats (req, res)
+
 
 async function getPreviewArticle (req, res)
 {
@@ -74,10 +76,12 @@ async function getCardsFromApi (req, res)
     try{
         var headers = {}
 
+        /*
         if(req.headers.authorization)
         {
             headers['Authorization'] = req.headers.authorization
         }
+        */
         const { data, error } = await axios.get(process.env.ALTERED_CARDS_ENDPOINT,
         {
             headers: headers, 
@@ -91,6 +95,32 @@ async function getCardsFromApi (req, res)
     }
     catch(perror)
     {
+        res.status(perror.response.status).send(perror.response.data);
+    }
+}
+
+async function getCardsStats (req, res)
+{
+    const cards = req.body
+    
+    try{
+        const apiparams = {reference: []}
+        cards.forEach(pcard => apiparams.reference.push(pcard.reference))
+
+        const { data, error } = await axios.get(process.env.ALTERED_STATS_ENDPOINT,
+        {
+            headers: {'Authorization': req.headers.authorization}, 
+            params: apiparams
+        })
+    
+        if(error)
+            res.status(error.status).send(error);
+        else
+            res.status(200).json(data)
+    }
+    catch(perror)
+    {
+        console.error(perror.response.data)
         res.status(perror.response.status).send(perror.response.data);
     }
 }

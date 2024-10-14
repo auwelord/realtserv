@@ -31,6 +31,7 @@ router.get('/card/favori/:ref', supabaseController.g_toggleCardFavori);
 router.get('/card/addfavori/:ref', supabaseController.g_addCardFavori);
 
 router.post('/cards/getfromapi', alteredController.g_getCardsFromApi);
+router.post('/cards/stats', alteredController.g_getCardsStats);
 
 router.post('/cardsdeck/set', supabaseController.g_setCardsDeck);
 
