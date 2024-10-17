@@ -11,6 +11,7 @@ router.get('/user/admin', supabaseController.g_isAdmin);
 
 router.post('/deck/new', supabaseController.g_newDeck);
 router.post('/deck/update', supabaseController.g_updateDeck);
+router.post('/deck/updatealtered/:id', supabaseController.g_updateDeckFromAltered);
 router.post('/deck/saveprops', supabaseController.g_saveProperties);
 router.post('/deck/save', supabaseController.g_saveDeck);
 router.post('/deck/newversion', supabaseController.g_createDeckVersion);

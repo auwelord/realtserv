@@ -15,6 +15,9 @@ exports.g_uploadImage = (req, res) => tools.traille(() => uploadImage (req, res)
 exports.g_saveProperties = (req, res) => tools.traille(() => saveProperties (req, res), res)
 //deck/update
 exports.g_updateDeck = (req, res) => tools.traille(() => updateDeck (req, res), res)
+//deck/updatealtered
+exports.g_updateDeckFromAltered = (req, res) => tools.traille(() => updateDeckFromAltered (req, res), res)
+
 //deck/new
 exports.g_newDeck = (req, res) => tools.traille(() => newDeck (req, res), res)
 //deck/newversion
@@ -216,6 +219,42 @@ async function newDeck (req, res)
         
 }
 
+async function updateDeckFromAltered (req, res)
+{
+    const cards = req.body;
+
+    const id = req.params.id;
+
+    //suppression des cartes du deck
+    var {error: errorDel} = await req.srvroleSupabase
+        .from('CardsDeck')
+        .delete()
+        .eq('deckId', id)
+
+    if(errorDel)
+    {
+        res.status(errorDel.status ? errorDel.status : 500).send(errorDel);
+        return
+    }
+
+    var {error: errorAdd} = await req.srvroleSupabase
+        .from('CardsDeck')
+        .insert(cards)
+
+    if(errorAdd)
+    {
+        res.status(errorAdd.status ? errorAdd.status : 500).send(errorAdd);
+        return
+    }
+
+    const {data, error} = await req.anonSupabase
+        .from('Deck')
+        .select()
+        .eq('id', id);
+
+    res.status(200).json(data[0])
+}
+
 async function updateDeck (req, res)
 {
     const deck = req.body;
@@ -333,6 +372,7 @@ async function createDeckVersion (req, res)
         refid: pdeck.refid > 0 ? pdeck.refid : pdeck.id,
         description: pdeck.description,
         hero_id: pdeck.hero_id,
+        idaltered: pdeck.idaltered,
         main_faction: pdeck.main_faction,
         public: pdeck.public,
         valide: pdeck.valide,
@@ -382,24 +422,48 @@ async function saveProperties (req, res)
     const pdeck = req.body;
 
     //on garde que les données utiles
-    const deck = {
+    const updateddeck = {
         name: pdeck.name,
         description: pdeck.description,
         public: pdeck.public,
         exturl: pdeck.exturl,
+        idaltered: pdeck.idaltered,
         modifiedAt: new Date().toISOString()
     }
 
-    const {data, error} = await req.srvroleSupabase
+    const {data: decks, error: errorUpdt} = await req.srvroleSupabase
         .from('Deck')
-        .update(deck)
+        .update(updateddeck)
         .select()
         .eq('id', pdeck.id);
 
-    if(error)
-        res.status(error.status ? error.status : 500).send(error);
-    else
-        res.status(200).json(data[0])        
+    if(errorUpdt)
+    {
+        res.status(errorUpdt.status ? errorUpdt.status : 500).send(errorUpdt);
+        return
+    }
+
+    const deck = decks[0]
+    const refid = deck.refid > 0 ? deck.refid : deck.id
+
+    //maj des propritétés qui doivent être communes entre les versions
+    const commonppties = {
+        idaltered: pdeck.idaltered,
+    }
+
+    const {data: decks2, error: errorUpdt2} = await req.srvroleSupabase
+        .from('Deck')
+        .update(updateddeck)
+        .select()
+        .or('id.eq.' + refid + ',refid.eq.' + refid);
+
+    if(errorUpdt2)
+    {
+        res.status(errorUpdt2.status ? errorUpdt2.status : 500).send(errorUpdt2);
+        return
+    }
+        
+    res.status(200).json(deck)        
 }
 
 async function saveDeck (req, res)
