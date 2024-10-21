@@ -38,6 +38,9 @@ exports.g_toggleCardFavori = (req, res) => tools.traille(() => toggleCardFavori 
 //card/addfavori/:ref
 exports.g_addCardFavori = (req, res) => tools.traille(() => addCardFavori (req, res), res)
 
+//cards/collection/update
+exports.g_updateCollection = (req, res) => tools.traille(() => updateCollection (req, res), res)
+
 //cardsdeck/set
 exports.g_setCardsDeck = (req, res) => tools.traille(() => setCardsDeck (req, res), res)
 
@@ -272,6 +275,60 @@ async function updateDeck (req, res)
     else
         res.status(200).json(data[0])
         
+}
+
+async function  updateCollection(req, res)
+{
+    const cards = req.body
+
+    if(!cards || cards.length == 0) 
+    {
+        res.status(200).json({nbupdates: 0})
+        return
+    }
+
+    const { data } = await req.srvroleSupabase.auth.getUser()
+
+    if(!data.user)
+    {
+        res.status(200).json({nbupdates: 0})
+        return
+    }
+
+    const toDelete = []
+    const toUpdate = []
+    
+    cards.forEach(pcard => {
+        if(pcard.inMyCollection == 0 && pcard.inMyTradelist == 0 && pcard.inMyWantlist == 0)
+        {
+            toDelete.push(pcard.reference)
+        }
+        else toUpdate.push(pcard)
+    })
+
+    const { error} = await req.srvroleSupabase
+        .from('Collection')
+        .upsert(toUpdate)
+
+    if(error)
+    {
+        res.status(error.status ? error.status : 500).send(error);
+        return
+    }
+
+    const { error: errorDelete} = await req.srvroleSupabase
+        .from('Collection')
+        .delete()
+        .eq('userId', data.user.id)
+        .in('reference', toDelete)
+       
+    if(errorDelete)
+    {
+        res.status(errorDelete.status ? errorDelete.status : 500).send(errorDelete);
+        return
+    }
+
+    res.status(200).json({nbupdates: cards.length})
 }
 
 async function updateCard (req, res)

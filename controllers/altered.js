@@ -101,8 +101,9 @@ async function getCardsFromApi (req, res)
 
 async function getCardsStats (req, res)
 {
-    const cards = req.body
-    
+    const cards = req.body.cards
+    const uniques = req.body.uniques
+
     try{
         const apiparams = {reference: []}
         cards.forEach(pcard => apiparams.reference.push(pcard.reference))
@@ -112,11 +113,33 @@ async function getCardsStats (req, res)
             headers: {'Authorization': req.headers.authorization}, 
             params: apiparams
         })
-    
+
+        const datauniques = []
+        if(uniques && uniques.length > 0) 
+        {
+            for(let unique of uniques)
+            {
+                const { data: dataunique, error: errorunique } = await axios.get(process.env.ALTERED_CARDS_ENDPOINT + unique.reference + '/stats',
+                {
+                    headers: {'Authorization': req.headers.authorization}
+                })
+
+                if(errorunique)
+                {
+                    res.status(errorunique.status).send(errorunique);
+                    return
+                }
+                datauniques.push(dataunique)
+            }
+        }
+
         if(error)
+        {
             res.status(error.status).send(error);
-        else
-            res.status(200).json(data)
+            return
+        }
+
+        res.status(200).json({cards: data, uniques: datauniques})
     }
     catch(perror)
     {
