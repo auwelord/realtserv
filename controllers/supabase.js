@@ -295,8 +295,10 @@ async function  updateCollection(req, res)
         return
     }
 
-    const { data } = await req.srvroleSupabase.auth.getUser()
+    const { data, error: errorUser } = await req.srvroleSupabase.auth.getUser()
 
+    console.error(data)
+    console.error(errorUser)
     if(!data.user)
     {
         console.error('aucun user')
