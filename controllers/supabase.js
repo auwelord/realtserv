@@ -277,6 +277,13 @@ async function updateDeck (req, res)
         
 }
 
+function getUserDisplayName(puser){
+    if(!puser) return ''
+
+    if(puser.app_metadata.provider == 'discord') return puser.user_metadata.custom_claims.global_name
+    return puser.user_metadata.display_name
+}
+
 async function  updateCollection(req, res)
 {
     const cards = req.body
@@ -297,8 +304,11 @@ async function  updateCollection(req, res)
 
     const toDelete = []
     const toUpdate = []
-    
+
+    const userName = getUserDisplayName(data.user)
+
     cards.forEach(pcard => {
+        pcard.userName = userName
         if(pcard.inMyCollection == 0 && pcard.inMyTradelist == 0 && pcard.inMyWantlist == 0)
         {
             toDelete.push(pcard.reference)
