@@ -290,6 +290,7 @@ async function  updateCollection(req, res)
 
     if(!cards || cards.length == 0) 
     {
+        console.error('aucune carte')
         res.status(200).json({nbupdates: 0})
         return
     }
@@ -298,6 +299,7 @@ async function  updateCollection(req, res)
 
     if(!data.user)
     {
+        console.error('aucun user')
         res.status(200).json({nbupdates: 0})
         return
     }
